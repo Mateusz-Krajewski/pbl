@@ -3,10 +3,10 @@
 
 #include <Arduino.h>
 
-#define IN1 4
-#define IN2 5
-#define IN3 6
-#define IN4 7
+#define IN1 22
+#define IN2 23
+#define IN3 24
+#define IN4 25
 #define enA 8
 #define enB 9
 
@@ -23,6 +23,8 @@ class MotorDriver {
     analogWrite(enB, speed);
   }
   void gofront(){
+    analogWrite(enA, speed);
+    analogWrite(enB, speed);
     digitalWrite(IN1,HIGH);
     digitalWrite(IN2,LOW);
     digitalWrite(IN3,HIGH);
@@ -35,28 +37,24 @@ class MotorDriver {
     digitalWrite(IN4,LOW);
   }
   void turnright(){  
-    analogWrite(enA,250);
-    analogWrite(enB, 250);
+    analogWrite(enA,255);
+    analogWrite(enB, 255);
     digitalWrite(IN1,HIGH);
     digitalWrite(IN2,LOW);
     digitalWrite(IN3,LOW);
     digitalWrite(IN4,HIGH);
-    delay(200);
-    analogWrite(enA, speed);
-    analogWrite(enB, speed);
-    this->stop();
+    delay(100);
+    this->gofront();
     }
   void turnleft(){ 
-    analogWrite(enA,250);
-    analogWrite(enB, 250);
+    analogWrite(enA,255);
+    analogWrite(enB, 255);
     digitalWrite(IN1,LOW);
     digitalWrite(IN2,HIGH);
     digitalWrite(IN3,HIGH);
     digitalWrite(IN4,LOW);
-    delay(200);
-    analogWrite(enA, speed);
-    analogWrite(enB, speed);
-    this->stop();
+    delay(100);
+    this->gofront();
     }
 };
 
