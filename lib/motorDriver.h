@@ -43,7 +43,7 @@ class MotorDriver {
     digitalWrite(IN2,LOW);
     digitalWrite(IN3,LOW);
     digitalWrite(IN4,HIGH);
-    delay(100);
+    delay(550);
     this->gofront();
     }
   void turnleft(){ 
@@ -53,7 +53,7 @@ class MotorDriver {
     digitalWrite(IN2,HIGH);
     digitalWrite(IN3,HIGH);
     digitalWrite(IN4,LOW);
-    delay(100);
+    delay(550);
     this->gofront();
     }
 };

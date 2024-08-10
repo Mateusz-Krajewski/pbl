@@ -7,7 +7,7 @@
 #include "../lib/servoDriver.h"
 #include "../lib/distanceSensor.h"
 
-#define DISTANCE 20
+#define DISTANCE 25
 
 #define RIGHT_ECHO 2
 #define RIGHT_TRIG 3
@@ -39,11 +39,31 @@ void loop() {
   int right_distance = right_sonic.read();
   int left_distance = left_sonic.read();
   int front_distance = front_sonic.read();
-
+  Serial.print("Front: ");
+  Serial.println(front_distance);
+  Serial.print("Right: ");
+  Serial.println(right_distance);
+  Serial.print("Left: ");
+  Serial.println(left_distance);
+  Serial.println();
+  Serial.println();
+  Serial.println();
   if ((front_distance > DISTANCE)) {
     motor.gofront();
-  } else {
+  } 
+  else if(right_distance < left_distance){
     motor.turnright();
   }
-  delay(50);
+  else{
+    motor.turnleft();
+  }
+  /*
+  else if(right_distance < 10 or right_distance > 350 or right_distance < left_distance){
+    motor.turnright();
+  }
+  else {
+    motor.turnleft();
+  }
+  */
+  delay(100);
 }
