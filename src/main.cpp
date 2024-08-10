@@ -9,6 +9,8 @@
 #include <Pixy2Video.h>
 #include <TPixy2.h>
 
+
+#include "distanceSensor.h"
 #define IN1 4
 #define IN2 5
 
