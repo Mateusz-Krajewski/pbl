@@ -29,6 +29,7 @@ class MotorDriver {
     digitalWrite(IN2,LOW);
     digitalWrite(IN3,HIGH);
     digitalWrite(IN4,LOW);
+    delay(25);
   };
   void stop() {
     digitalWrite(IN1,LOW);
@@ -36,7 +37,7 @@ class MotorDriver {
     digitalWrite(IN3,LOW);
     digitalWrite(IN4,LOW);
   }
-  void turnright(){  
+  void turnleft(){  
     analogWrite(enA,255);
     analogWrite(enB, 255);
     digitalWrite(IN1,HIGH);
@@ -46,7 +47,7 @@ class MotorDriver {
     delay(550);
     this->gofront();
     }
-  void turnleft(){ 
+  void turnright(){ 
     analogWrite(enA,255);
     analogWrite(enB, 255);
     digitalWrite(IN1,LOW);

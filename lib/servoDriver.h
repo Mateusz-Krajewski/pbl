@@ -13,6 +13,7 @@ class ServoMotorDriver {
    }
    int write(int value) {
     motor.write(value);
+    delay(10);
    }
 };
 #endif  //  SERVO_DRIVER_H_
