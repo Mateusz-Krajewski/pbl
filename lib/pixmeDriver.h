@@ -18,6 +18,16 @@ public:
  void setup() {
   pixy.init();
  }
+ bool CheckBlock(){
+  pixy.ccc.getBlocks();
+  if(pixy.ccc.numBlocks){
+    return true;
+  }
+  else{
+    return false;
+  }
+ }
+ 
  Block* GetBlocks(int &size) {
   pixy.ccc.getBlocks();
   if (pixy.ccc.numBlocks) {

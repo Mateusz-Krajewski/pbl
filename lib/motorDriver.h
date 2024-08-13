@@ -22,7 +22,7 @@ class MotorDriver {
     analogWrite(enA, speed);
     analogWrite(enB, speed);
   }
-  void gofront(){
+  void goback(){
     analogWrite(enA, speed);
     analogWrite(enB, speed);
     digitalWrite(IN1,HIGH);
@@ -31,6 +31,15 @@ class MotorDriver {
     digitalWrite(IN4,LOW);
     delay(25);
   };
+  void gofront(){
+    analogWrite(enA, speed);
+    analogWrite(enB, speed);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,HIGH);
+    digitalWrite(IN3,LOW);
+    digitalWrite(IN4,HIGH);
+    delay(250);
+  }
   void stop() {
     digitalWrite(IN1,LOW);
     digitalWrite(IN2,LOW);
@@ -57,6 +66,24 @@ class MotorDriver {
     delay(550);
     this->gofront();
     }
+  void turnleft_Alignment(){  
+    analogWrite(enA,255);
+    analogWrite(enB, 255);
+    digitalWrite(IN1,HIGH);
+    digitalWrite(IN2,LOW);
+    digitalWrite(IN3,LOW);
+    digitalWrite(IN4,HIGH);
+    delay(100);
+  }
+  void turnright_Alignment(){ 
+    analogWrite(enA,255);
+    analogWrite(enB, 255);
+    digitalWrite(IN1,LOW);
+    digitalWrite(IN2,HIGH);
+    digitalWrite(IN3,HIGH);
+    digitalWrite(IN4,LOW);
+    delay(100);
+  }
 };
 
 #endif  //  MOTOR_DRIVER_H_
