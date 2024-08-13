@@ -12,10 +12,12 @@
 #define enB 9
 
 namespace {
-  constexpr auto LOW_TURN_SPPED = 210;
   constexpr auto DEFAULT_SPEED = 100;
   constexpr auto TURN_SPEED = 255;
   constexpr auto INCORECT_OF_COMPASS = 0.05;
+
+  constexpr auto LOW_TURN_SPPED = 120;
+  constexpr auto LOW_TURN_TIME = 10;
 }
 
 class MotorDriver {
@@ -82,7 +84,7 @@ class MotorDriver {
     digitalWrite(IN2,LOW);
     digitalWrite(IN3,LOW);
     digitalWrite(IN4,HIGH);
-    delay(50);
+    delay(LOW_TURN_TIME);
   }
   void turnright_Alignment(){ 
     Serial.println("turning right");
@@ -92,7 +94,7 @@ class MotorDriver {
     digitalWrite(IN2,HIGH);
     digitalWrite(IN3,HIGH);
     digitalWrite(IN4,LOW);
-    delay(50);
+    delay(LOW_TURN_TIME);
   }
 };
 

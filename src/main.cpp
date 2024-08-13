@@ -20,6 +20,7 @@
 enum modes { 
   SEARCHING, 
   GOTOTHECUBE,
+  GETCLOSERTOTHECUBE,
   PICKUP,
   ERROR
 };
@@ -64,6 +65,27 @@ class Searching {
   }
 };
 
+void picker_fn() {
+  pickup.write(0);
+  servo.write(0);
+}
+void store_it_fn() {
+  servo.write(90);
+  delay(100);
+  pickup.write(180);
+  delay(150);
+  servo.write(0);
+}
+
+void GO_CLOSER() {
+  delay(3000);
+  picker_fn();
+  motor.gofront();
+  delay(350);
+  store_it_fn();
+  mode = modes::SEARCHING;
+}
+
 
 void GOTHECUBE_f(){
   Serial.println("--------------------------------------------");
@@ -82,11 +104,11 @@ void GOTHECUBE_f(){
       if(pixy.ccc.blocks[i].m_x < 154){//if detected object is left of center x
         motor.turnleft_Alignment();
       }
-      else if(pixy.ccc.blocks[i].m_x > 164){//if detected object i right of center x
+      else if(pixy.ccc.blocks[i].m_x > 168){//if detected object i right of center x
         motor.turnright_Alignment();
-      }
-      if (pixy.ccc.blocks[i].m_y < 120) {
-        mode = modes::PICKUP;
+      } else {
+        mode = modes::GETCLOSERTOTHECUBE;
+        motor.stop();
       }
     }
   } else{
@@ -134,6 +156,8 @@ void loop() {
   }
   else if (mode == modes::GOTOTHECUBE) {
     GOTHECUBE_f();
+  } else if (mode == modes::GETCLOSERTOTHECUBE) {
+    GO_CLOSER();
   } else {
     PICKUP_f();
   }
