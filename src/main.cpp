@@ -71,10 +71,11 @@ void picker_fn() {
 }
 void store_it_fn() {
   servo.write(90);
-  delay(100);
+  delay(1000);
   pickup.write(180);
-  delay(150);
+  delay(1000);
   servo.write(0);
+  delay(1000);
 }
 
 void GO_CLOSER() {
@@ -121,7 +122,7 @@ void PICKUP_f(){
   pickup.write(0);
   delay(300);
   servo.write(80);
-  delay(300);
+  delay(1000);
   //Grab the cube (CHANGE VALUE)
   pickup.write(180);
   delay(300);
