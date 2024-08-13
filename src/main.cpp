@@ -11,11 +11,11 @@
 #include "../lib/pickupMotor.h"
 
 #define DISTANCE 25
-
 #define RIGHT_ECHO 28
 #define RIGHT_TRIG 29
 #define LEFT_ECHO 32
 #define LEFT_TRIG 33
+
 enum modes { 
   SEARCHING, 
   GOTOTHECUBE,
@@ -82,22 +82,20 @@ void GOTHECUBE_f(){
   //Check if cube lost
   if(pixy.ccc.numBlocks){
     for (int i=0; i<pixy.ccc.numBlocks; i++){
-      if(pixy.ccc.blocks[i].m_x <154){//if detected object is left of center x
+      if(pixy.ccc.blocks[i].m_x <158){//if detected object is left of center x
         motor.turnright_Alignment();
       }
-      else if(pixy.ccc.blocks[i].m_x >164){//if detected object i right of center x
+      else if(pixy.ccc.blocks[i].m_x >168){//if detected object i right of center x
         motor.turnleft_Alignment();
       }
-      //The robot is centered
-      if (pixy.ccc.blocks[i].m_y < 100) {
+      if (pixy.ccc.blocks[i].m_y < 150) {
         //Hand down
         motor.stop();
         //mode = modes::PICKUP;
         servo.write(0);
       }
     }
-  }
-  else{
+  } else{
     mode = modes::SEARCHING;
   }
 }
