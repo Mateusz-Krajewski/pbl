@@ -11,7 +11,7 @@
 #include "../lib/distanceSensor.h"
 #include "../lib/pickupMotor.h"
 
-#define DISTANCE 20
+#define DISTANCE 35
 #define RIGHT_ECHO 28
 #define RIGHT_TRIG 29
 #define LEFT_ECHO 32
@@ -86,8 +86,7 @@ void GOTHECUBE_f(){
         motor.turnright_Alignment();
       }
       if (pixy.ccc.blocks[i].m_y < 120) {
-        delay(5000);
-        //mode = modes::PICKUP;
+        mode = modes::PICKUP;
       }
     }
   } else{
@@ -96,14 +95,17 @@ void GOTHECUBE_f(){
 }
 
 void PICKUP_f(){
-  //Grab the cube (CHANGE VALUE)
+  motor.stop();
   pickup.write(0);
+  delay(300);
+  servo.write(80);
+  delay(300);
+  //Grab the cube (CHANGE VALUE)
+  pickup.write(180);
+  delay(300);
   //Hands up
-  servo.write(180);
-
-  //Drop the cube (CHANGE VALUE)
-  pickup.write(10);
-
+  servo.write(0);
+  delay(300);
   mode = modes::SEARCHING;
 }
 
@@ -118,6 +120,8 @@ void setup() {
   pickup.setup();
   motor.setup();
   pixy.init();
+  pickup.write(180);
+  servo.write(0);
 }
 
 bool moveAvibile = true;

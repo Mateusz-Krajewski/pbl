@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <Servo.h>
-#define PIN 10
+#define PIN 4
 class PickupMotorDrive {
   private:
    Servo motor;
