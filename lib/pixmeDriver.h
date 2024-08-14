@@ -36,6 +36,20 @@ public:
   }
   return nullptr;
  }
+ int Get_M_X_Cube() {
+  int size;
+  auto blocks = this->GetBlocks(size);
+  if (size > 0) {
+    return blocks[0].m_x;
+  }
+ }
+ int Get_M_Y_Cube() {
+  int size;
+  auto blocks = this->GetBlocks(size);
+  if (size > 0) {
+    return blocks[0].m_y;
+  }
+ }
  bool CubeInView() {
     int size;
     auto blocks = this->GetBlocks(size);
