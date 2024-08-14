@@ -2,20 +2,28 @@
 #include <Pixy2.h>
 #include <PIxy2CCC.h>
 #include <SPI.h>
+#include <Servo.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Ultrasonic.h>
 #include "../lib/motorDriver.h"
-#include "../lib/pixmeDriver.h"
-#include "../lib/servoDriver.h"
 #include "../lib/distanceSensor.h"
 #include "../lib/pickupMotor.h"
+#include "../lib/pixmeDriver.h"
 
-#define DISTANCE 35
-#define RIGHT_ECHO 28
-#define RIGHT_TRIG 29
-#define LEFT_ECHO 32
-#define LEFT_TRIG 33
+namespace {
+  constexpr auto DISTANCE = 25;
+
+  constexpr auto RIGHT_TRIG = 29;
+  constexpr auto RIGHT_ECHO =  28;
+  constexpr auto LEFT_ECHO = 32;
+  constexpr auto LEFT_TRIG = 33;
+}
+
+namespace {
+  constexpr auto ARM_PIN = 4;
+  constexpr auto HAND_PIN = 3;
+}
 
 enum modes { 
   SEARCHING, 
@@ -24,31 +32,43 @@ enum modes {
   PICKUP,
   ERROR
 };
+enum TURN {
+  RIGHT,
+  LEFT,
+  NO
+};
 
-ServoMotorDriver servo;
-PickupMotorDrive pickup;
+ArmController armController;
 MotorDriver motor;
-Pixy2 pixy;
-Ultrasonic left_sonic(RIGHT_TRIG, RIGHT_ECHO);
-Ultrasonic right_sonic(LEFT_TRIG, LEFT_ECHO);
+//Pixy2 pixy;
+PixyController pixy;
+DistanceSensor left_sonic(RIGHT_TRIG, RIGHT_ECHO);
+DistanceSensor right_sonic(LEFT_TRIG, LEFT_ECHO);
 
 modes mode = modes::SEARCHING;
 
-class Searching {
-  public:
-   static bool cubeIsFounded() {
-      pixy.ccc.getBlocks();
-      if(pixy.ccc.numBlocks){
-        for (int i=0; i<pixy.ccc.numBlocks; i++) {
-          if(pixy.ccc.blocks[i].m_signature==1 or pixy.ccc.blocks[i].m_signature==2){
-            Serial.println("osuadhoufsdboksfadkhsadfkhfsadkasfdnkfsd");
-            return true;
-          };
-        }
-      }
-      return false;
+class ModesClass {
+ private:
+  TURN last_turn;
+  void print(Block *blocks, int size) {
+    Serial.println("--------------------------------------------");
+    Serial.print("M_x");
+    Serial.println(blocks[0].m_x);
+    Serial.print("M_y");
+    Serial.println(blocks[0].m_y);
+    Serial.println("--------------------------------------------");
+    Serial.println("--------------------------------------------");
+    Serial.print("M_y");
+    Serial.println(blocks[0].m_index);
+    Serial.println("--------------------------------------------");
+    Serial.println("--------------------------------------------");
+    Serial.println("--------------------------------------------");
+    Serial.println("--------------------------------------------");
+  }
+  bool cubeIsFounded() {
+      return pixy.CubeInView();
    }
-  static void tryNotCrashWall() {
+  void tryNotCrashWall() {
     int rightMiddle_distance = right_sonic.read();
     int leftMiddle_distance = left_sonic.read();
     Serial.print("right:");
@@ -58,136 +78,105 @@ class Searching {
     Serial.println("---------------------------------------");
     if ((rightMiddle_distance > DISTANCE) && (leftMiddle_distance > DISTANCE)) {
       motor.gofront();
+      last_turn = TURN::NO;
     } else if(rightMiddle_distance < leftMiddle_distance){
-      motor.turnleft();
-    } else{
-      motor.turnright();
-    }
-  }
-};
-
-class ArmController {
- public:
-  void picker_fn() {
-  pickup.write(0);
-  servo.write(0);
-  }
-void store_it_fn() {
-  servo.write(90);
-  delay(1000);
-  pickup.write(180);
-  delay(1000);
-  servo.write(0);
-  delay(1000);
-  }
-};
-
-void PICKUP_f(){
-  motor.stop();
-  servo.write(0);
-  pickup.write(0);
-  delay(700);
-  servo.write(120);
-  delay(1000);
-  //Grab the cube (CHANGE VALUE)
-  pickup.write(180);
-  delay(700);
-  //Hands up
-  servo.write(0);
-  mode = modes::SEARCHING;
-}
-
-void GO_CLOSER() {
-  auto value_m_y =0;
-  do {
-    motor.gofront();
-  pixy.ccc.getBlocks();
-  for (int i = 0; i < pixy.ccc.numBlocks; i++) {
-      value_m_y = pixy.ccc.blocks[0].m_y;
-  }
-  } while (value_m_y < 170 );
-  delay(100);
-  mode = modes::PICKUP;
-}
-
-void GO_CLOSER() {
-  auto value_m_y =0;
-  do {
-    motor.gofront();
-  pixy.ccc.getBlocks();
-  for (int i = 0; i < pixy.ccc.numBlocks; i++) {
-    if (pixy.ccc.blocks[i].m_index == tracking_block_index) {
-      value_m_y = pixy.ccc.blocks[i].m_y;
-    }
-  }
-  } while (value_m_y < 170 );
-  delay(100);
-  mode = modes::PICKUP;
-}
-
-
-void GOTHECUBE_f(){
-  pixy.ccc.getBlocks();
-  Serial.println("--------------------------------------------");
-  Serial.print("M_x");
-  Serial.println(pixy.ccc.blocks[0].m_x);
-  Serial.print("M_y");
-  Serial.println(pixy.ccc.blocks[0].m_y);
-  Serial.println("--------------------------------------------");
-  Serial.println("--------------------------------------------");
-    Serial.print("M_y");
-  Serial.println(pixy.ccc.blocks[0].m_index);
-  Serial.println("--------------------------------------------");
-  Serial.println("--------------------------------------------");
-  Serial.println("--------------------------------------------");
-  Serial.println("--------------------------------------------");
-
-  //Check if cube lost
-  if(pixy.ccc.numBlocks){
-    for (int i=0; i<pixy.ccc.numBlocks; i++){
-      if(pixy.ccc.blocks[0].m_x <= 154){//if detected object is left of center x
-        motor.turnleft_Alignment();
+      if ( last_turn == TURN::RIGHT) {
+        motor.turnright();
+        last_turn = TURN::RIGHT;
+      } else {
+        motor.turnleft();
+        last_turn = TURN::LEFT;
       }
-      else if(pixy.ccc.blocks[i].m_x >= 168){//if detected object i right of center x
+    } else {
+      if (last_turn == TURN::LEFT) {
+        motor.turnleft();
+        last_turn = TURN::LEFT;
+      } else {
+      motor.turnright();
+      last_turn = TURN::RIGHT;
+      }
+    }
+  }
+ public:
+  ModesClass() {
+    last_turn == TURN::NO;
+  }
+  void Searching() {
+    if(this->cubeIsFounded()) {
+      mode = modes::GOTOTHECUBE;
+    } else {
+    this->tryNotCrashWall();
+    }
+  }
+bool GOTHECUBE(){
+  int size = 0;
+  auto blocks = pixy.GetBlocks(size);
+  this->print(blocks, size);
+  //Check if cube lost
+  if(size){
+    for (int i=0; i<size; i++){
+      if(blocks[0].m_x <= 130){//if detected object is left of center x
+        motor.turnleft_Alignment();
+      } else if(blocks[i].m_x >= 140){//if detected object i right of center x
         motor.turnright_Alignment();
       } else {
         mode = modes::GETCLOSERTOTHECUBE;
         motor.stop();
+        return true;
       }
     }
-    } else{
+  } else {
     mode = modes::SEARCHING;
+    return false;
   }
 }
+void GO_CLOSER() {
+  auto value_m_y =0;
+  while (value_m_y > 190) {
+    motor.goback();
+  }
+  int i = 0;
+  do {
+    if (i > 10) {
+      while(!this->GOTHECUBE()) {};
+      i = 0;
+    }
+    motor.gofront(SPEED_t::KLOW);
+    int size = 0;
+    auto blocks = pixy.GetBlocks(size);
+    value_m_y = blocks[0].m_y;
+    i++;
+  } while (value_m_y < 175 );
+  motor.stop();
+  delay(100);
+  mode = modes::PICKUP;
+}
+
+};
+
+ModesClass controller;
 
 
-// float get_angle(float right_dimension, float left_dimension, float d = 11){
-//   float x = abs(right_dimension - left_dimension);
-//   return atan2(d,x) * 57.296;
-// }
 
 void setup() {
   Serial.begin(115200);
-  servo.setup(3);
-  servo.write(0);
-  pickup.setup(180);
+  armController.setup(HAND_PIN, ARM_PIN);
   motor.setup();
-  pixy.init();
+  pixy.setup();
+  mode = modes::SEARCHING;
 }
 
-// bool moveAvibile = true;
 void loop() {
   if (mode == modes::SEARCHING) {
-    if(Searching::cubeIsFounded()) {
-      mode = modes::GOTOTHECUBE;
-    }
-    Searching::tryNotCrashWall();
+    controller.Searching();
   }
   else if (mode == modes::GOTOTHECUBE) {
-    GOTHECUBE_f();
+    controller.GOTHECUBE();
   } else if (mode == modes::GETCLOSERTOTHECUBE) {
-    GO_CLOSER();
-  } else {
-    PICKUP_f();
+    controller.GO_CLOSER();
+  } else if (mode == modes::PICKUP) {
+    armController.catchACube();
+    mode = modes::SEARCHING;
+    delay(150);
   }
 }

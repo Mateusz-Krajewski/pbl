@@ -3,19 +3,41 @@
 
 #include <Arduino.h>
 #include <Servo.h>
-#define PIN 4
 class PickupMotorDrive {
   private:
    Servo motor;
   public:
-   void setup(int start_position = 0) {
-    motor.attach(PIN);
+   void setup(int pin, int start_position = 0) {
+    motor.attach(pin);
     motor.write(start_position);
    }
    int write(int value) {
     motor.write(value);
-    delay(10);
    }
 };
+
+class ArmController {
+ private:
+  PickupMotorDrive arm;
+  PickupMotorDrive claw;
+ public:
+  ArmController(): arm(), claw() {
+  }
+  void setup(int hand_pin, int arm_pin) {
+    claw.setup(hand_pin, 0);
+    arm.setup(arm_pin, 180);
+  }
+  void catchACube() {
+    arm.write(0);
+    claw.write(0);
+    delay(700);
+    claw.write(120);
+    delay(1000);
+    arm.write(180);
+    delay(700);
+    claw.write(0);
+  }
+};
+
 
 #endif  //  PICKUP_MOTOR_H_
