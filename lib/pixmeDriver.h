@@ -18,6 +18,16 @@ public:
  void setup() {
   pixy.init();
  }
+ bool CheckBlock(){
+  pixy.ccc.getBlocks();
+  if(pixy.ccc.numBlocks){
+    return true;
+  }
+  else{
+    return false;
+  }
+ }
+ 
  Block* GetBlocks(int &size) {
   pixy.ccc.getBlocks();
   if (pixy.ccc.numBlocks) {
@@ -25,6 +35,19 @@ public:
     return pixy.ccc.blocks;
   }
   return nullptr;
+ }
+ bool CubeInView() {
+    int size;
+    auto blocks = this->GetBlocks(size);
+    if (size <= 0) {
+        return false;
+    }
+    for (int i=0; i < size; i++) {
+        if (blocks[i].m_signature == 1 || blocks[i].m_signature == 2) {
+            return true;
+        }
+    }
+    return false;
  }
 };
 
