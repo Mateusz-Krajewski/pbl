@@ -25,7 +25,6 @@ enum modes {
   ERROR
 };
 
-
 ServoMotorDriver servo;
 PickupMotorDrive pickup;
 MotorDriver motor;
@@ -35,8 +34,6 @@ Ultrasonic right_sonic(LEFT_TRIG, LEFT_ECHO);
 
 modes mode = modes::SEARCHING;
 
-auto tracking_block_index = 0;
-
 class Searching {
   public:
    static bool cubeIsFounded() {
@@ -44,7 +41,7 @@ class Searching {
       if(pixy.ccc.numBlocks){
         for (int i=0; i<pixy.ccc.numBlocks; i++) {
           if(pixy.ccc.blocks[i].m_signature==1 or pixy.ccc.blocks[i].m_signature==2){
-            tracking_block_index = pixy.ccc.blocks[i].m_index;
+            Serial.println("osuadhoufsdboksfadkhsadfkhfsadkasfdnkfsd");
             return true;
           };
         }
@@ -69,10 +66,12 @@ class Searching {
   }
 };
 
-void picker_fn() {
+class ArmController {
+ public:
+  void picker_fn() {
   pickup.write(0);
   servo.write(0);
-}
+  }
 void store_it_fn() {
   servo.write(90);
   delay(1000);
@@ -80,8 +79,8 @@ void store_it_fn() {
   delay(1000);
   servo.write(0);
   delay(1000);
-}
-
+  }
+};
 
 void PICKUP_f(){
   motor.stop();
@@ -104,9 +103,7 @@ void GO_CLOSER() {
     motor.gofront();
   pixy.ccc.getBlocks();
   for (int i = 0; i < pixy.ccc.numBlocks; i++) {
-    if (pixy.ccc.blocks[i].m_index == tracking_block_index) {
-      value_m_y = pixy.ccc.blocks[i].m_y;
-    }
+      value_m_y = pixy.ccc.blocks[0].m_y;
   }
   } while (value_m_y < 170 );
   delay(100);
@@ -116,59 +113,51 @@ void GO_CLOSER() {
 
 void GOTHECUBE_f(){
   pixy.ccc.getBlocks();
-  for (int i = 0; i < pixy.ccc.numBlocks; i++) {
-    if (pixy.ccc.blocks[i].m_index == tracking_block_index) {
-        Serial.println("--------------------------------------------");
-        Serial.print("M_x");
-        Serial.println(pixy.ccc.blocks[i].m_x);
-        Serial.print("M_y");
-        Serial.println(pixy.ccc.blocks[i].m_y);
-        Serial.println("--------------------------------------------");
-        Serial.println("--------------------------------------------");
-          Serial.print("M_y");
-        Serial.println(pixy.ccc.blocks[i].m_index);
-        Serial.println("--------------------------------------------");
-        Serial.println("--------------------------------------------");
-        Serial.println("--------------------------------------------");
-        Serial.println("--------------------------------------------");
-  delay(4000);
-    }
-  }
+  Serial.println("--------------------------------------------");
+  Serial.print("M_x");
+  Serial.println(pixy.ccc.blocks[0].m_x);
+  Serial.print("M_y");
+  Serial.println(pixy.ccc.blocks[0].m_y);
+  Serial.println("--------------------------------------------");
+  Serial.println("--------------------------------------------");
+    Serial.print("M_y");
+  Serial.println(pixy.ccc.blocks[0].m_index);
+  Serial.println("--------------------------------------------");
+  Serial.println("--------------------------------------------");
+  Serial.println("--------------------------------------------");
+  Serial.println("--------------------------------------------");
 
   //Check if cube lost
   if(pixy.ccc.numBlocks){
     for (int i=0; i<pixy.ccc.numBlocks; i++){
-      if ( pixy.ccc.blocks[i].m_index == tracking_block_index) {
-        if(pixy.ccc.blocks[i].m_x <= 154){//if detected object is left of center x
-          motor.turnleft_Alignment();
-        }
-        else if(pixy.ccc.blocks[i].m_x >= 168){//if detected object i right of center x
-          motor.turnright_Alignment();
-        } else {
-          mode = modes::GETCLOSERTOTHECUBE;
-          motor.stop();
-        }
+      if(pixy.ccc.blocks[0].m_x <= 154){//if detected object is left of center x
+        motor.turnleft_Alignment();
+      }
+      else if(pixy.ccc.blocks[i].m_x >= 168){//if detected object i right of center x
+        motor.turnright_Alignment();
+      } else {
+        mode = modes::GETCLOSERTOTHECUBE;
+        motor.stop();
       }
     }
-  } else{
+    } else{
     mode = modes::SEARCHING;
   }
 }
 
 
-float get_angle(float right_dimension, float left_dimension, float d = 11){
-  float x = abs(right_dimension - left_dimension);
-  return atan2(d,x) * 57.296;
-}
+// float get_angle(float right_dimension, float left_dimension, float d = 11){
+//   float x = abs(right_dimension - left_dimension);
+//   return atan2(d,x) * 57.296;
+// }
 
 void setup() {
   Serial.begin(115200);
   servo.setup(3);
-  pickup.setup();
+  servo.write(0);
+  pickup.setup(180);
   motor.setup();
   pixy.init();
-  pickup.write(180);
-  servo.write(0);
 }
 
 // bool moveAvibile = true;
@@ -186,6 +175,4 @@ void loop() {
   } else {
     PICKUP_f();
   }
-  // Serial.print("Angle print: ");
-  // Serial.println(get_angle(30,30));
 }

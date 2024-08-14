@@ -8,8 +8,9 @@ class PickupMotorDrive {
   private:
    Servo motor;
   public:
-   void setup() {
+   void setup(int start_position = 0) {
     motor.attach(PIN);
+    motor.write(start_position);
    }
    int write(int value) {
     motor.write(value);
