@@ -25,14 +25,17 @@ enum modes {
   ERROR
 };
 
-modes mode = modes::SEARCHING;
+
 ServoMotorDriver servo;
 PickupMotorDrive pickup;
 MotorDriver motor;
 Pixy2 pixy;
-
 Ultrasonic left_sonic(RIGHT_TRIG, RIGHT_ECHO);
 Ultrasonic right_sonic(LEFT_TRIG, LEFT_ECHO);
+
+modes mode = modes::SEARCHING;
+
+auto tracking_block_index = 0;
 
 class Searching {
   public:
@@ -41,6 +44,7 @@ class Searching {
       if(pixy.ccc.numBlocks){
         for (int i=0; i<pixy.ccc.numBlocks; i++) {
           if(pixy.ccc.blocks[i].m_signature==1 or pixy.ccc.blocks[i].m_signature==2){
+            tracking_block_index = pixy.ccc.blocks[i].m_index;
             return true;
           };
         }
@@ -78,38 +82,72 @@ void store_it_fn() {
   delay(1000);
 }
 
-void GO_CLOSER() {
-  delay(3000);
-  picker_fn();
-  motor.gofront();
-  delay(350);
-  store_it_fn();
+
+void PICKUP_f(){
+  motor.stop();
+  servo.write(0);
+  pickup.write(0);
+  delay(700);
+  servo.write(120);
+  delay(1000);
+  //Grab the cube (CHANGE VALUE)
+  pickup.write(180);
+  delay(700);
+  //Hands up
+  servo.write(0);
   mode = modes::SEARCHING;
+}
+
+void GO_CLOSER() {
+  auto value_m_y =0;
+  do {
+    motor.gofront();
+  pixy.ccc.getBlocks();
+  for (int i = 0; i < pixy.ccc.numBlocks; i++) {
+    if (pixy.ccc.blocks[i].m_index == tracking_block_index) {
+      value_m_y = pixy.ccc.blocks[i].m_y;
+    }
+  }
+  } while (value_m_y < 170 );
+  delay(100);
+  mode = modes::PICKUP;
 }
 
 
 void GOTHECUBE_f(){
-  Serial.println("--------------------------------------------");
-  Serial.print("M_x");
-  Serial.println(pixy.ccc.blocks[0].m_x);
-  Serial.print("M_y");
-  Serial.println(pixy.ccc.blocks[0].m_y);
-  Serial.println("--------------------------------------------");
-  Serial.println("--------------------------------------------");
-
   pixy.ccc.getBlocks();
+  for (int i = 0; i < pixy.ccc.numBlocks; i++) {
+    if (pixy.ccc.blocks[i].m_index == tracking_block_index) {
+        Serial.println("--------------------------------------------");
+        Serial.print("M_x");
+        Serial.println(pixy.ccc.blocks[i].m_x);
+        Serial.print("M_y");
+        Serial.println(pixy.ccc.blocks[i].m_y);
+        Serial.println("--------------------------------------------");
+        Serial.println("--------------------------------------------");
+          Serial.print("M_y");
+        Serial.println(pixy.ccc.blocks[i].m_index);
+        Serial.println("--------------------------------------------");
+        Serial.println("--------------------------------------------");
+        Serial.println("--------------------------------------------");
+        Serial.println("--------------------------------------------");
+  delay(4000);
+    }
+  }
 
   //Check if cube lost
   if(pixy.ccc.numBlocks){
     for (int i=0; i<pixy.ccc.numBlocks; i++){
-      if(pixy.ccc.blocks[i].m_x < 154){//if detected object is left of center x
-        motor.turnleft_Alignment();
-      }
-      else if(pixy.ccc.blocks[i].m_x > 168){//if detected object i right of center x
-        motor.turnright_Alignment();
-      } else {
-        mode = modes::GETCLOSERTOTHECUBE;
-        motor.stop();
+      if ( pixy.ccc.blocks[i].m_index == tracking_block_index) {
+        if(pixy.ccc.blocks[i].m_x <= 154){//if detected object is left of center x
+          motor.turnleft_Alignment();
+        }
+        else if(pixy.ccc.blocks[i].m_x >= 168){//if detected object i right of center x
+          motor.turnright_Alignment();
+        } else {
+          mode = modes::GETCLOSERTOTHECUBE;
+          motor.stop();
+        }
       }
     }
   } else{
@@ -117,20 +155,6 @@ void GOTHECUBE_f(){
   }
 }
 
-void PICKUP_f(){
-  motor.stop();
-  pickup.write(0);
-  delay(300);
-  servo.write(80);
-  delay(1000);
-  //Grab the cube (CHANGE VALUE)
-  pickup.write(180);
-  delay(300);
-  //Hands up
-  servo.write(0);
-  delay(300);
-  mode = modes::SEARCHING;
-}
 
 float get_angle(float right_dimension, float left_dimension, float d = 11){
   float x = abs(right_dimension - left_dimension);
@@ -147,7 +171,7 @@ void setup() {
   servo.write(0);
 }
 
-bool moveAvibile = true;
+// bool moveAvibile = true;
 void loop() {
   if (mode == modes::SEARCHING) {
     if(Searching::cubeIsFounded()) {
