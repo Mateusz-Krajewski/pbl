@@ -99,7 +99,7 @@ class ModesClass {
   }
  public:
   ModesClass() {
-    last_turn == TURN::NO;
+    last_turn = TURN::NO;
   }
   void Searching() {
     if(this->cubeIsFounded()) {
@@ -137,18 +137,13 @@ void GO_CLOSER() {
   }
   int i = 0;
   do {
-    if (i > 10) {
-      while(!this->GOTHECUBE()) {};
-      i = 0;
-    }
     motor.gofront(SPEED_t::KLOW);
     int size = 0;
     auto blocks = pixy.GetBlocks(size);
     value_m_y = blocks[0].m_y;
     i++;
-  } while (value_m_y < 175 );
+  } while (value_m_y < 179 );
   motor.stop();
-  delay(100);
   mode = modes::PICKUP;
 }
 
@@ -177,6 +172,5 @@ void loop() {
   } else if (mode == modes::PICKUP) {
     armController.catchACube();
     mode = modes::SEARCHING;
-    delay(150);
   }
 }
