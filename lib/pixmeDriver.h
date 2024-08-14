@@ -12,9 +12,8 @@
 #include <TPixy2.h>
 
 class PixyController {
-private:
-  Pixy2 pixy;
 public:
+  Pixy2 pixy;
  void setup() {
   pixy.init();
  }
@@ -29,21 +28,19 @@ public:
  }
  
  Block* GetBlocks(int &size) {
-  pixy.ccc.getBlocks();
-  if (pixy.ccc.numBlocks) {
-    size = pixy.ccc.numBlocks;
+  do{
+    pixy.ccc.getBlocks();
+  } while (!pixy.ccc.numBlocks);
     return pixy.ccc.blocks;
-  }
-  return nullptr;
  }
  bool CubeInView() {
     int size;
-    auto blocks = this->GetBlocks(size);
-    if (size <= 0) {
+    pixy.ccc.getBlocks();
+    if (pixy.ccc.numBlocks <= 0) {
         return false;
     }
     for (int i=0; i < size; i++) {
-        if (blocks[i].m_signature == 1 || blocks[i].m_signature == 2) {
+        if (pixy.ccc.blocks[i].m_signature == 1 || pixy.ccc.blocks[i].m_signature == 2) {
             return true;
         }
     }

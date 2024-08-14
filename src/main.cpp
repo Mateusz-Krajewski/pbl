@@ -114,16 +114,13 @@ bool GOTHECUBE(){
   this->print(blocks, size);
   //Check if cube lost
   if(size){
-    for (int i=0; i<size; i++){
-      if(blocks[0].m_x <= 130){//if detected object is left of center x
-        motor.turnleft_Alignment();
-      } else if(blocks[i].m_x >= 140){//if detected object i right of center x
-        motor.turnright_Alignment();
-      } else {
-        mode = modes::GETCLOSERTOTHECUBE;
-        motor.stop();
-        return true;
-      }
+    if(blocks[0].m_x <= 130){//if detected object is left of center x
+      motor.turnleft_Alignment();
+    } else if(blocks[0].m_x >= 140){//if detected object i right of center x
+      motor.turnright_Alignment();
+    } else {
+      mode = modes::GETCLOSERTOTHECUBE;
+      return true;
     }
   } else {
     mode = modes::SEARCHING;
@@ -131,18 +128,18 @@ bool GOTHECUBE(){
   }
 }
 void GO_CLOSER() {
-  auto value_m_y =0;
-  while (value_m_y > 190) {
+  pixy.pixy.ccc.getBlocks();
+  if (pixy.pixy.ccc.numBlocks) {}
+  int size = 0;
+  auto value_m_y = pixy.GetBlocks(size)[0].m_y;
+  while (value_m_y > 185) {
     motor.goback();
   }
-  int i = 0;
   do {
     motor.gofront(SPEED_t::KLOW);
-    int size = 0;
     auto blocks = pixy.GetBlocks(size);
     value_m_y = blocks[0].m_y;
-    i++;
-  } while (value_m_y < 179 );
+  } while (value_m_y < 175 );
   motor.stop();
   mode = modes::PICKUP;
 }
