@@ -110,6 +110,21 @@ void GO_CLOSER() {
   mode = modes::PICKUP;
 }
 
+void GO_CLOSER() {
+  auto value_m_y =0;
+  do {
+    motor.gofront();
+  pixy.ccc.getBlocks();
+  for (int i = 0; i < pixy.ccc.numBlocks; i++) {
+    if (pixy.ccc.blocks[i].m_index == tracking_block_index) {
+      value_m_y = pixy.ccc.blocks[i].m_y;
+    }
+  }
+  } while (value_m_y < 170 );
+  delay(100);
+  mode = modes::PICKUP;
+}
+
 
 void GOTHECUBE_f(){
   pixy.ccc.getBlocks();
