@@ -19,7 +19,7 @@ namespace {
   constexpr auto TURN_SPEED = 255;
   // constexpr auto INCORECT_OF_COMPASS = 0.05;
 
-  constexpr auto LOW_TURN_SPPED = 170;
+  constexpr auto LOW_TURN_SPPED = 180;
   constexpr auto LOW_TURN_TIME = 50;
 }
 
@@ -53,7 +53,8 @@ class MotorDriver {
     digitalWrite(IN2,LOW);
     digitalWrite(IN3,HIGH);
     digitalWrite(IN4,LOW);
-    delay(25);
+    delay(200);
+    stop();
   };
   void gofront(SPEED_t speed = SPEED_t::KMIDLE){
     analogWrite(enA, speed);
