@@ -120,12 +120,22 @@ bool GOTHECUBE(){
   }
 }
 void GO_CLOSER() {
+  int i = true;
   bool need_pickup = true;
   auto value_m_y =0;
     if (pixy.ccc.numBlocks) {
       value_m_y = pixy.ccc.blocks[0].m_y;
+      if (pixy.ccc.blocks[0].m_y > 190) {
+        motor.goback();
+      }
     }
-  while (value_m_y < 180 ) {
+  while (value_m_y < 175 ) {
+    if (i == 2) {
+    this->GOTHECUBE();
+    i = 0;
+    } else {
+      i +=1;
+    }
     motor.gofront(SPEED_t::KMIDLE);
     pixy.ccc.getBlocks();
     if (pixy.ccc.numBlocks > 0) {
@@ -152,10 +162,12 @@ void setup() {
   armController.setup(HAND_PIN, ARM_PIN);
   motor.setup();
   pixy.init();
+  pixy.setLamp(1,1);
   mode = modes::SEARCHING;
 }
 
 void loop() {
+  pixy.ccc.getBlocks();
   if (mode == modes::SEARCHING) {
     controller.Searching();
   }
@@ -164,7 +176,14 @@ void loop() {
   } else if (mode == modes::GETCLOSERTOTHECUBE) {
     controller.GO_CLOSER();
   } else if (mode == modes::PICKUP) {
+    for (int i=0; i< 5; i++) {
+    pixy.ccc.getBlocks();
+    controller.GOTHECUBE();
+    }
     armController.catchACube();
+    motor.goback();
+    delay(100);
+    armController.catchACube2();
     mode = modes::SEARCHING;
   }
 }
