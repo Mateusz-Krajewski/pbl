@@ -46,14 +46,14 @@ class MotorDriver {
     analogWrite(enA, SPEED_t::KMIDLE);
     analogWrite(enB, SPEED_t::KMIDLE);
   }
-  void goback(){
+  void goback(int d_time =200){
     analogWrite(enA, SPEED_t::KHIGH);
     analogWrite(enB, SPEED_t::KHIGH);
     digitalWrite(IN1,HIGH);
     digitalWrite(IN2,LOW);
     digitalWrite(IN3,HIGH);
     digitalWrite(IN4,LOW);
-    delay(200);
+    delay(d_time);
     stop();
   };
   void gofront(SPEED_t speed = SPEED_t::KMIDLE){

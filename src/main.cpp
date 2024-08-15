@@ -49,18 +49,6 @@ modes mode = modes::SEARCHING;
 
 class ModesClass {
  private:
-  TURN last_turn;
-  void print(Block *blocks, int size) {
-    Serial.println("--------------------------------------------");
-    Serial.print("M_x");
-    Serial.println(blocks[0].m_x);
-    Serial.print("M_y");
-    Serial.println(blocks[0].m_y);
-    Serial.println("--------------------------------------------");
-    Serial.println("--------------------------------------------");
-    Serial.println("--------------------------------------------");
-    Serial.println("--------------------------------------------");
-  }
   bool cubeIsFounded() {
     for (int i = 0; i < pixy.ccc.numBlocks; i++) {
       if (pixy.ccc.blocks[i].m_signature == 1 || pixy.ccc.blocks[i].m_signature == 2) {
@@ -77,22 +65,14 @@ class ModesClass {
     // Serial.print("left:");
     // Serial.println(leftMiddle_distance);
     Serial.println("---------------------------------------");
-    if ((rightMiddle_distance > DISTANCE) ) {
-      motor.gofront();
-      last_turn = TURN::NO;
-    } else {
-      if ( last_turn == TURN::RIGHT) {
-        motor.turnright();
-        last_turn = TURN::RIGHT;
-      } else {
+    if ((rightMiddle_distance < DISTANCE) ) {
         motor.turnleft();
-        last_turn = TURN::LEFT;
-      }
+    } else {
+      motor.gofront(SPEED_t::KMIDLE);
     }
-  }
+  };
  public:
   ModesClass() {
-    last_turn = TURN::NO;
   }
   void Searching() {
     if(this->cubeIsFounded()) {
@@ -119,40 +99,44 @@ bool GOTHECUBE(){
   }
 }
 void GO_CLOSER() {
-  int i = true;
+  int i = 0;
   bool need_pickup = true;
   auto value_m_y =0;
   if (pixy.ccc.numBlocks) {
     value_m_y = pixy.ccc.blocks[0].m_y;
     while (value_m_y > 190) {
-      value_m_y = pixy.ccc.blocks[0].m_y;
-      if (pixy.ccc.blocks[0].m_y > 190) {
-        motor.goback();
+      motor.goback(50);
+      pixy.ccc.getBlocks();
+      if (pixy.ccc.numBlocks < 0) {
+        mode = modes::SEARCHING;
+        break;
+      } else {
+        value_m_y = pixy.ccc.blocks[0].m_y;
       }
-    }
-  while (value_m_y < 175 ) {
-    if (i == 2) {
-    this->GOTHECUBE();
-    i = 0;
+      }
+    while (value_m_y < 175 ) {
+      if (i == 2) {
+      this->GOTHECUBE();
+      i = 0;
+      } else {
+        i +=1;
+      }
+      motor.gofront(SPEED_t::KMIDLE);
+      pixy.ccc.getBlocks();
+      if (pixy.ccc.numBlocks > 0) {
+        value_m_y = pixy.ccc.blocks[0].m_y;
+      } else {
+        need_pickup = false;
+        mode = modes::SEARCHING;
+        break;
+      }
+    };
+    if (need_pickup) {
+    motor.stop();
+    mode = modes::PICKUP;
     } else {
-      i +=1;
-    }
-    motor.gofront(SPEED_t::KMIDLE);
-    pixy.ccc.getBlocks();
-    if (pixy.ccc.numBlocks > 0) {
-      value_m_y = pixy.ccc.blocks[0].m_y;
-    } else {
-      need_pickup = false;
       mode = modes::SEARCHING;
-      break;
     }
-  };
-  if (need_pickup) {
-  motor.stop();
-  mode = modes::PICKUP;
-  } else {
-    mode = modes::SEARCHING;
-  }
 }
 
 };
