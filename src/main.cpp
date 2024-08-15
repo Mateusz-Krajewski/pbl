@@ -40,8 +40,8 @@ enum TURN {
 
 ArmController armController;
 MotorDriver motor;
-//Pixy2 pixy;
-PixyController pixy;
+Pixy2 pixy;
+//PixyController pixy;
 //DistanceSensor left_sonic(RIGHT_TRIG, RIGHT_ECHO);
 DistanceSensor right_sonic(LEFT_TRIG, LEFT_ECHO);
 
@@ -58,15 +58,16 @@ class ModesClass {
     Serial.println(blocks[0].m_y);
     Serial.println("--------------------------------------------");
     Serial.println("--------------------------------------------");
-    Serial.print("M_y");
-    Serial.println(blocks[0].m_index);
-    Serial.println("--------------------------------------------");
-    Serial.println("--------------------------------------------");
     Serial.println("--------------------------------------------");
     Serial.println("--------------------------------------------");
   }
   bool cubeIsFounded() {
-      return pixy.CubeInView();
+    for (int i = 0; i < pixy.ccc.numBlocks; i++) {
+      if (pixy.ccc.blocks[i].m_signature == 1 || pixy.ccc.blocks[i].m_signature == 2) {
+        return true;
+      }
+    }
+      return false;
    }
   void tryNotCrashWall() {
     int rightMiddle_distance = right_sonic.read();
@@ -92,7 +93,7 @@ class ModesClass {
   }
  public:
   ModesClass() {
-    last_turn == TURN::NO;
+    last_turn = TURN::NO;
   }
   void Searching() {
     if(this->cubeIsFounded()) {
@@ -102,16 +103,11 @@ class ModesClass {
     }
   }
 bool GOTHECUBE(){
-  int size = 0;
-  auto blocks = pixy.GetBlocks(size);
-  if (size > 0) {
-  this->print(blocks, size);
-  }
   //Check if cube lost
-  if(size){
-    if(blocks[0].m_x <= 130){//if detected object is left of center x
+  if(pixy.ccc.numBlocks){
+    if(pixy.ccc.blocks[0].m_x <= 130){//if detected object is left of center x
       motor.turnleft_Alignment();
-    } else if(blocks[0].m_x >= 140){//if detected object i right of center x
+    } else if(pixy.ccc.blocks[0].m_x >= 140){//if detected object i right of center x
       motor.turnright_Alignment();
     } else {
       mode = modes::GETCLOSERTOTHECUBE;
@@ -124,21 +120,25 @@ bool GOTHECUBE(){
   }
 }
 void GO_CLOSER() {
+  bool need_pickup = true;
   auto value_m_y =0;
-  int size = 0;
-  auto blocks = pixy.GetBlocks(size);
-    if (size > 0) {
-      value_m_y = blocks[0].m_y;
+    if (pixy.ccc.numBlocks) {
+      value_m_y = pixy.ccc.blocks[0].m_y;
     }
   while (value_m_y < 180 ) {
     motor.gofront(SPEED_t::KMIDLE);
-    auto blocks = pixy.GetBlocks(size);
-    if (size > 0) {
-      value_m_y = blocks[0].m_y;
+    pixy.ccc.getBlocks();
+    if (pixy.ccc.numBlocks > 0) {
+      value_m_y = pixy.ccc.blocks[0].m_y;
+    } else {
+      need_pickup = false;
+      break;
     }
   };
+  if (need_pickup) {
   motor.stop();
   mode = modes::PICKUP;
+  }
 }
 
 };
@@ -151,7 +151,7 @@ void setup() {
   Serial.begin(115200);
   armController.setup(HAND_PIN, ARM_PIN);
   motor.setup();
-  pixy.setup();
+  pixy.init();
   mode = modes::SEARCHING;
 }
 
