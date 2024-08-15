@@ -42,7 +42,7 @@ ArmController armController;
 MotorDriver motor;
 //Pixy2 pixy;
 PixyController pixy;
-DistanceSensor left_sonic(RIGHT_TRIG, RIGHT_ECHO);
+//DistanceSensor left_sonic(RIGHT_TRIG, RIGHT_ECHO);
 DistanceSensor right_sonic(LEFT_TRIG, LEFT_ECHO);
 
 modes mode = modes::SEARCHING;
@@ -70,30 +70,23 @@ class ModesClass {
    }
   void tryNotCrashWall() {
     int rightMiddle_distance = right_sonic.read();
-    int leftMiddle_distance = left_sonic.read();
+    delay(20);
+    //int leftMiddle_distance = left_sonic.read();
     Serial.print("right:");
     Serial.println(rightMiddle_distance);
-    Serial.print("left:");
-    Serial.println(leftMiddle_distance);
+    // Serial.print("left:");
+    // Serial.println(leftMiddle_distance);
     Serial.println("---------------------------------------");
-    if ((rightMiddle_distance > DISTANCE) && (leftMiddle_distance > DISTANCE)) {
+    if ((rightMiddle_distance > DISTANCE) ) {
       motor.gofront();
       last_turn = TURN::NO;
-    } else if(rightMiddle_distance < leftMiddle_distance){
+    } else {
       if ( last_turn == TURN::RIGHT) {
         motor.turnright();
         last_turn = TURN::RIGHT;
       } else {
         motor.turnleft();
         last_turn = TURN::LEFT;
-      }
-    } else {
-      if (last_turn == TURN::LEFT) {
-        motor.turnleft();
-        last_turn = TURN::LEFT;
-      } else {
-      motor.turnright();
-      last_turn = TURN::RIGHT;
       }
     }
   }
@@ -111,19 +104,19 @@ class ModesClass {
 bool GOTHECUBE(){
   int size = 0;
   auto blocks = pixy.GetBlocks(size);
+  if (size > 0) {
   this->print(blocks, size);
+  }
   //Check if cube lost
   if(size){
-    for (int i=0; i<size; i++){
-      if(blocks[0].m_x <= 130){//if detected object is left of center x
-        motor.turnleft_Alignment();
-      } else if(blocks[i].m_x >= 140){//if detected object i right of center x
-        motor.turnright_Alignment();
-      } else {
-        mode = modes::GETCLOSERTOTHECUBE;
-        motor.stop();
-        return true;
-      }
+    if(blocks[0].m_x <= 130){//if detected object is left of center x
+      motor.turnleft_Alignment();
+    } else if(blocks[0].m_x >= 140){//if detected object i right of center x
+      motor.turnright_Alignment();
+    } else {
+      mode = modes::GETCLOSERTOTHECUBE;
+      motor.stop();
+      return true;
     }
   } else {
     mode = modes::SEARCHING;
@@ -132,23 +125,19 @@ bool GOTHECUBE(){
 }
 void GO_CLOSER() {
   auto value_m_y =0;
-  while (value_m_y > 190) {
-    motor.goback();
-  }
-  int i = 0;
-  do {
-    if (i > 10) {
-      while(!this->GOTHECUBE()) {};
-      i = 0;
+  int size = 0;
+  auto blocks = pixy.GetBlocks(size);
+    if (size > 0) {
+      value_m_y = blocks[0].m_y;
     }
-    motor.gofront(SPEED_t::KLOW);
-    int size = 0;
+  while (value_m_y < 180 ) {
+    motor.gofront(SPEED_t::KMIDLE);
     auto blocks = pixy.GetBlocks(size);
-    value_m_y = blocks[0].m_y;
-    i++;
-  } while (value_m_y < 175 );
+    if (size > 0) {
+      value_m_y = blocks[0].m_y;
+    }
+  };
   motor.stop();
-  delay(100);
   mode = modes::PICKUP;
 }
 
@@ -177,6 +166,5 @@ void loop() {
   } else if (mode == modes::PICKUP) {
     armController.catchACube();
     mode = modes::SEARCHING;
-    delay(150);
   }
 }
