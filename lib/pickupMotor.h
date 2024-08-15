@@ -36,8 +36,9 @@ class ArmController {
   }
   void catchACube2() {
     arm.write(180);
-    delay(700);
+    delay(1500);
     claw.write(0);
+    delay(500);
   }
 };
 

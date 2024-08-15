@@ -126,9 +126,10 @@ void GO_CLOSER() {
     value_m_y = pixy.ccc.blocks[0].m_y;
     while (value_m_y > 190) {
       value_m_y = pixy.ccc.blocks[0].m_y;
-      motor.goback();
+      if (pixy.ccc.blocks[0].m_y > 190) {
+        motor.goback();
+      }
     }
-  }
   while (value_m_y < 175 ) {
     if (i == 2) {
     this->GOTHECUBE();
