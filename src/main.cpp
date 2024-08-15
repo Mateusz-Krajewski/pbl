@@ -156,6 +156,7 @@ void GO_CLOSER() {
 }
 
 };
+};
 
 ModesClass controller;
 
