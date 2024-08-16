@@ -100,26 +100,34 @@ bool GOTHECUBE(){
 }
 void GO_CLOSER() {
   int i = 0;
+  int j = 0;
   bool need_pickup = true;
   auto value_m_y =0;
   if (pixy.ccc.numBlocks) {
     value_m_y = pixy.ccc.blocks[0].m_y;
     while (value_m_y > 190) {
-      motor.goback(50);
-      pixy.ccc.getBlocks();
-      if (pixy.ccc.numBlocks < 0) {
-        mode = modes::SEARCHING;
-        break;
-      } else {
-        value_m_y = pixy.ccc.blocks[0].m_y;
-      }
-      }
-    while (value_m_y < 175 ) {
       if (i == 2) {
-      this->GOTHECUBE();
-      i = 0;
+        this->GOTHECUBE();
+        i = 0;
       } else {
         i +=1;
+      }
+      motor.goback(50);
+      pixy.ccc.getBlocks();
+      if (pixy.ccc.numBlocks > 0) {
+        value_m_y = pixy.ccc.blocks[0].m_y;
+      } else {
+          need_pickup = false;
+          mode = modes::SEARCHING;
+          break;
+      }
+    };
+    while (value_m_y < 175 ) {
+      if (j == 2) {
+      this->GOTHECUBE();
+      j = 0;
+      } else {
+        j +=1;
       }
       motor.gofront(SPEED_t::KMIDLE);
       pixy.ccc.getBlocks();
