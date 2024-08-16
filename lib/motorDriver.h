@@ -19,7 +19,7 @@ namespace {
   constexpr auto TURN_SPEED = 255;
   // constexpr auto INCORECT_OF_COMPASS = 0.05;
 
-  constexpr auto LOW_TURN_SPPED = 180;
+  constexpr auto LOW_TURN_SPPED = 175;
   constexpr auto LOW_TURN_TIME = 50;
 }
 

@@ -12,7 +12,7 @@
 #include "../lib/pixmeDriver.h"
 
 namespace {
-  constexpr auto DISTANCE = 25;
+  constexpr auto DISTANCE = 15;
 
   constexpr auto RIGHT_TRIG = 29;
   constexpr auto RIGHT_ECHO =  28;
@@ -42,7 +42,7 @@ ArmController armController;
 MotorDriver motor;
 Pixy2 pixy;
 //PixyController pixy;
-//DistanceSensor left_sonic(RIGHT_TRIG, RIGHT_ECHO);
+DistanceSensor left_sonic(RIGHT_TRIG, RIGHT_ECHO);
 DistanceSensor right_sonic(LEFT_TRIG, LEFT_ECHO);
 
 modes mode = modes::SEARCHING;
@@ -57,20 +57,36 @@ class ModesClass {
     }
       return false;
    }
+  TURN last_turn;
   void tryNotCrashWall() {
     int rightMiddle_distance = right_sonic.read();
-    //int leftMiddle_distance = left_sonic.read();
+    int leftMiddle_distance = left_sonic.read();
     Serial.print("right:");
     Serial.println(rightMiddle_distance);
-    // Serial.print("left:");
-    // Serial.println(leftMiddle_distance);
+    Serial.print("left:");
+    Serial.println(leftMiddle_distance);
     Serial.println("---------------------------------------");
-    if ((rightMiddle_distance < DISTANCE) ) {
+    if ((rightMiddle_distance > DISTANCE) && (leftMiddle_distance > DISTANCE)) {
+      motor.gofront();
+      last_turn = TURN::NO;
+    } else if(rightMiddle_distance < leftMiddle_distance){
+      if ( last_turn == TURN::RIGHT) {
+        motor.turnright();
+        last_turn = TURN::RIGHT;
+      } else {
         motor.turnleft();
+        last_turn = TURN::LEFT;
+      }
     } else {
-      motor.gofront(SPEED_t::KMIDLE);
+      if (last_turn == TURN::LEFT) {
+        motor.turnleft();
+        last_turn = TURN::LEFT;
+      } else {
+      motor.turnright();
+      last_turn = TURN::RIGHT;
+      }
     }
-  };
+  }
  public:
   ModesClass() {
   }
