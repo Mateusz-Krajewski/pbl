@@ -98,6 +98,7 @@ bool GOTHECUBE(){
     return false;
   }
 }
+
 void GO_CLOSER() {
   int i = 0;
   int j = 0;
